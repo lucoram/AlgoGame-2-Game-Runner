@@ -1,0 +1,19 @@
+4 4 100
+.M..
+...o
+.#.o
+..oF
+
+1111
+5311
+6011
+1111
+
+UP | DOWN
+LEFT | LEFT
+UP | DOWN
+LEFT | DOWN
+UP | RIGHT
+RIGHT | UP
+DOWN | UP
+END_GAME
