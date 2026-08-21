@@ -14,6 +14,8 @@ public class GameRunner {
     private static final int MACHINE_MAX_CLIFF_HEIGHT = 5;
     private static final int HERO_MAX_CLIFF_HEIGHT = 3;
     private static final int HERO_HOPPING_STAMINA_DROP = 10;
+    private static final int HERO_UPHILL_STAMINA_DROP = 3;
+    private static final int HERO_DOWNHILL_STAMINA_DROP = 0;
     private static final int HERO_CHEST_PUSHING_STAMINA_DROP = 5;
 
     public static final int MAX_HERO_STAMINA = 100;
@@ -276,6 +278,7 @@ public class GameRunner {
 
         // Thread.sleep(100);
         // Thread.sleep(2000);
+        // Thread.sleep(1000);
         // Thread.sleep(500);
         Thread.sleep(200);
     }
@@ -854,7 +857,17 @@ public class GameRunner {
 
             stealCollectedStonesFromMachine(hero, destPosRow, destPosCol);
 
-            hero.stamina -= isHeroHoppingOverProp ? HERO_HOPPING_STAMINA_DROP : 1;
+            int moveStaminaDrop = 1;
+
+            if (isHeroHoppingOverProp) {
+                moveStaminaDrop = HERO_HOPPING_STAMINA_DROP;
+            } else if (cellIsAtTop(currPosRow, currPosCol, destPosRow, destPosRow)) {
+                moveStaminaDrop = HERO_DOWNHILL_STAMINA_DROP;
+            } else if (cellIsAtTop(destPosRow, destPosRow, currPosRow, currPosCol)) {
+                moveStaminaDrop = HERO_UPHILL_STAMINA_DROP;
+            }
+
+            hero.stamina -= moveStaminaDrop;
             hero.currentPositionRow = destPosRow;
             hero.currentPositionCol = destPosCol;
 
