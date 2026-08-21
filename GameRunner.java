@@ -657,7 +657,7 @@ public class GameRunner {
         }
 
         if (cellIsOnCliff(machine.nextPositionRow, machine.nextPositionCol, secondNextMoveRow, secondNextMoveCol,
-                MACHINE_MAX_CLIFF_HEIGHT)
+                HERO_MAX_CLIFF_HEIGHT)
                 && cellIsAtTop(secondNextMoveRow, secondNextMoveCol, machine.nextPositionRow,
                         machine.nextPositionCol)) {
             return true;
