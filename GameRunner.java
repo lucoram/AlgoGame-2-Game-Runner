@@ -14,6 +14,7 @@ public class GameRunner {
     private static final int MACHINE_MAX_CLIFF_HEIGHT = 5;
     private static final int HERO_MAX_CLIFF_HEIGHT = 3;
     private static final int HERO_HOPPING_STAMINA_DROP = 10;
+    private static final int HERO_SAME_ELEVATION_STAMINA_DROP = 1;
     private static final int HERO_UPHILL_STAMINA_DROP = 3;
     private static final int HERO_DOWNHILL_STAMINA_DROP = 0;
     private static final int HERO_CHEST_PUSHING_STAMINA_DROP = 5;
@@ -355,6 +356,14 @@ public class GameRunner {
             // check for skippable prop
             char prop = map[hero.nextPositionRow][hero.nextPositionCol][3];
             if (prop == 'o' || prop == 't') {
+
+                // can't execute hopping over prop if not enough stamina for doing it
+                if (hero.stamina < HERO_HOPPING_STAMINA_DROP) {
+                    hero.validatedAction = AgentAction.WAIT;
+
+                    return;
+                }
+
                 hero.amendNextPositionCoordByMoveDir(action);
 
                 if (cellHasBlockers(hero.nextPositionRow, hero.nextPositionCol, fosaAndExcavatorAndChestBlockers)
@@ -381,6 +390,13 @@ public class GameRunner {
         if (heroesPushActions.contains(action)) {
             // can't execute push move while hacking a machine
             if (hero.hackedMachine != null) {
+                hero.validatedAction = AgentAction.WAIT;
+
+                return;
+            }
+
+            // can't execute push move if not enough stamina for doing it
+            if (hero.stamina < HERO_CHEST_PUSHING_STAMINA_DROP) {
                 hero.validatedAction = AgentAction.WAIT;
 
                 return;
@@ -504,12 +520,17 @@ public class GameRunner {
         int currPosRow = hero.currentPositionRow;
         int currPosCol = hero.currentPositionCol;
 
-        if ((cellIsAtTop(currPosRow, currPosCol, nextMoveRow, nextMoveCol)
-                && (elevation[currPosRow][currPosCol]
-                        - elevation[nextMoveRow][nextMoveCol] >= MACHINE_MAX_CLIFF_HEIGHT))
-                || (cellIsAtTop(nextMoveRow, nextMoveCol, currPosRow, currPosCol)
-                        && (elevation[nextMoveRow][nextMoveCol]
-                                - elevation[currPosRow][currPosCol] >= HERO_MAX_CLIFF_HEIGHT))) {
+        int currPosToNextLevelDiff = elevation[currPosRow][currPosCol] - elevation[nextMoveRow][nextMoveCol];
+        int nextPosToCurrLevelDiff = elevation[nextMoveRow][nextMoveCol] - elevation[currPosRow][currPosCol];
+
+        boolean nextCellIsAtTop = cellIsAtTop(nextMoveRow, nextMoveCol, currPosRow, currPosCol);
+        boolean currCellIsAtTop = cellIsAtTop(currPosRow, currPosCol, nextMoveRow, nextMoveCol);
+        boolean nextAndCurrAtSameElevation = currPosToNextLevelDiff == 0;
+
+        if ((nextCellIsAtTop
+                && (hero.stamina < HERO_UPHILL_STAMINA_DROP || nextPosToCurrLevelDiff >= HERO_MAX_CLIFF_HEIGHT))
+                || (nextAndCurrAtSameElevation && hero.stamina < HERO_SAME_ELEVATION_STAMINA_DROP)
+                || (currCellIsAtTop && currPosToNextLevelDiff >= MACHINE_MAX_CLIFF_HEIGHT)) {
             return true;
         }
 
@@ -857,7 +878,7 @@ public class GameRunner {
 
             stealCollectedStonesFromMachine(hero, destPosRow, destPosCol);
 
-            int moveStaminaDrop = 1;
+            int moveStaminaDrop = HERO_SAME_ELEVATION_STAMINA_DROP;
 
             if (isHeroHoppingOverProp) {
                 moveStaminaDrop = HERO_HOPPING_STAMINA_DROP;
