@@ -863,7 +863,7 @@ public class GameRunner {
                 moveStaminaDrop = HERO_HOPPING_STAMINA_DROP;
             } else if (cellIsAtTop(currPosRow, currPosCol, destPosRow, destPosCol)) {
                 moveStaminaDrop = HERO_DOWNHILL_STAMINA_DROP;
-            } else if (cellIsAtTop(destPosRow, destPosRow, currPosRow, currPosCol)) {
+            } else if (cellIsAtTop(destPosRow, destPosCol, currPosRow, currPosCol)) {
                 moveStaminaDrop = HERO_UPHILL_STAMINA_DROP;
             }
 
