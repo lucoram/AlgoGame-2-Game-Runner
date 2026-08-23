@@ -340,14 +340,8 @@ public class GameRunner {
             // Check for blockers
             char[] heroBlockers = (hero.type == 'F' ? fosaAndExcavatorAndChestBlockers : makiAndGrapplerBlockers);
 
-            if (cellHasBlockers(hero.nextPositionRow, hero.nextPositionCol, heroBlockers)) {
-                hero.validatedAction = AgentAction.WAIT;
-
-                return;
-            }
-
-            // check for tree or hole + cliff
-            if (isNextCellUnreachable(hero, hero.nextPositionRow, hero.nextPositionCol)) {
+            if (cellHasBlockers(hero.nextPositionRow, hero.nextPositionCol, heroBlockers)
+                    || isNextCellUnreachable(hero)) {
                 hero.validatedAction = AgentAction.WAIT;
 
                 return;
@@ -389,14 +383,7 @@ public class GameRunner {
 
         if (heroesPushActions.contains(action)) {
             // can't execute push move while hacking a machine
-            if (hero.hackedMachine != null) {
-                hero.validatedAction = AgentAction.WAIT;
-
-                return;
-            }
-
-            // can't execute push move if not enough stamina for doing it
-            if (hero.stamina < HERO_CHEST_PUSHING_STAMINA_DROP) {
+            if (hero.hackedMachine != null || hero.stamina < HERO_CHEST_PUSHING_STAMINA_DROP) {
                 hero.validatedAction = AgentAction.WAIT;
 
                 return;
@@ -410,8 +397,7 @@ public class GameRunner {
 
             hero.amendNextPositionCoordByMoveDir(heroMoveWithPushAction);
 
-            // can't execute push move if there isn't a chest in the move direction
-            if (!cellHasChest(hero.nextPositionRow, hero.nextPositionCol)) {
+            if (!cellHasChest(hero.nextPositionRow, hero.nextPositionCol) || isNextCellUnreachable(hero)) {
                 hero.validatedAction = AgentAction.WAIT;
 
                 return;
@@ -423,19 +409,10 @@ public class GameRunner {
             int chestNextPositionCol = chestNextPositionRowCoords[1];
 
             if (cellHasBlockers(chestNextPositionRow, chestNextPositionCol, fosaAndExcavatorAndChestBlockers)
-                    || cellHasChest(chestNextPositionRow, chestNextPositionCol)) {
-                hero.validatedAction = AgentAction.WAIT;
-
-                return;
-            }
-
-            if (cellHasMachine(chestNextPositionRow, chestNextPositionCol)) {
-                hero.validatedAction = AgentAction.WAIT;
-
-                return;
-            }
-
-            if (cellIsAtTop(chestNextPositionRow, chestNextPositionCol, hero.nextPositionRow, hero.nextPositionCol)) {
+                    || cellHasChest(chestNextPositionRow, chestNextPositionCol)
+                    || cellHasMachine(chestNextPositionRow, chestNextPositionCol)
+                    || cellIsAtTop(chestNextPositionRow, chestNextPositionCol, hero.nextPositionRow,
+                            hero.nextPositionCol)) {
                 hero.validatedAction = AgentAction.WAIT;
 
                 return;
@@ -501,7 +478,9 @@ public class GameRunner {
         return hackableMachines;
     }
 
-    private static boolean isNextCellUnreachable(Hero hero, int nextMoveRow, int nextMoveCol) {
+    private static boolean isNextCellUnreachable(Hero hero) {
+        int nextMoveRow = hero.nextPositionRow;
+        int nextMoveCol = hero.nextPositionCol;
 
         // Modify next cell by non blocker prop for hero
         if (map[nextMoveRow][nextMoveCol][3] == (hero.type == 'F' ? 'o' : 't')) {
