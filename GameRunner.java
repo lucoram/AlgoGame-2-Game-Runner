@@ -424,6 +424,9 @@ public class GameRunner {
                             hero.nextPositionCol)) {
                 hero.validatedAction = AgentAction.WAIT;
 
+                // reinit chest lock
+                map[hero.nextPositionRow][hero.nextPositionCol][hero.mapLevelIndex] = EMPTY_CHAR;
+
                 return;
             }
 
