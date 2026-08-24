@@ -75,6 +75,8 @@ public class GameRunner {
     private static void runGameLoop() throws InterruptedException {
         int tickNumber = 0;
 
+        printMapAndStats(tickNumber);
+
         while (true) {
             boolean timeLimitExceeded = tickNumber >= mapTimeLimit;
             boolean actionsFileIncomplete = tickNumber >= heroesActions.size();
@@ -200,6 +202,8 @@ public class GameRunner {
         hero.currentPositionCol = col;
         hero.type = type;
         hero.mapLevelIndex = (type == 'F' ? 0 : 1);
+        hero.requestedAction = AgentAction.WAIT;
+        hero.validatedAction = AgentAction.WAIT;
 
         map[row][col][hero.mapLevelIndex] = type;
         map[row][col][3] = '.';
@@ -212,6 +216,8 @@ public class GameRunner {
         machine.type = type;
         machine.currentOrientation = (type == 'X' ? MachineOrientation.FACING_LEFT
                 : MachineOrientation.FACING_RIGHT);
+        machine.requestedAction = AgentAction.WAIT;
+        machine.validatedAction = AgentAction.WAIT;
 
         map[row][col][2] = type;
         map[row][col][3] = '.';
@@ -397,7 +403,10 @@ public class GameRunner {
 
             hero.amendNextPositionCoordByMoveDir(heroMoveWithPushAction);
 
-            if (!cellHasChest(hero.nextPositionRow, hero.nextPositionCol) || isNextCellUnreachable(hero)) {
+            int otherHeroMapLevelIndex = hero.type == 'F' ? 1 : 0;
+
+            if (!cellHasChest(hero.nextPositionRow, hero.nextPositionCol) || isNextCellUnreachable(hero)
+                    || chestIsLockedByOtherHero(hero, otherHeroMapLevelIndex)) {
                 hero.validatedAction = AgentAction.WAIT;
 
                 return;
@@ -454,6 +463,21 @@ public class GameRunner {
 
         String machineActionNameByHack = action.name().replace("HACK_", "");
         hero.hackedMachine.requestedAction = AgentAction.valueOf(machineActionNameByHack);
+    }
+
+    private static boolean chestIsLockedByOtherHero(Hero hero, int otherHeroMapLevelIndex) {
+        int nextPositionRow = hero.nextPositionRow;
+        int nextPositionCol = hero.nextPositionCol;
+        int heroMapLevelIndex = hero.mapLevelIndex;
+        char otherHeroCellValue = map[nextPositionRow][nextPositionCol][otherHeroMapLevelIndex];
+
+        if (otherHeroCellValue != 'c') {
+            map[nextPositionRow][nextPositionCol][heroMapLevelIndex] = 'c';
+
+            return false;
+        }
+
+        return true;
     }
 
     private static Machine getMachineOnTheCell(char heroType, int heroPositionRow, int heroPositionCol) {
