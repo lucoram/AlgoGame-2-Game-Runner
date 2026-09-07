@@ -144,7 +144,7 @@ public class GameRunner {
 
     private static void readMapAndInstanciateAgents() throws FileNotFoundException {
         Scanner mapScan = new Scanner(new File("map.txt"));
-        Scanner elevationScan = new Scanner(new File("elevation.txt"));
+        // Scanner elevationScan = new Scanner(new File("elevation.txt"));
 
         mapHeight = mapScan.nextInt();
         mapWidth = mapScan.nextInt();
@@ -161,13 +161,16 @@ public class GameRunner {
 
         for (int row = 0; row < mapHeight; row++) {
             String mapLine = mapScan.nextLine();
-            String elevationLine = elevationScan.nextLine();
+            // String elevationLine = elevationScan.nextLine();
 
             for (int col = 0; col < mapWidth; col++) {
                 char mapCellValue = mapLine.charAt(col);
-                int elevationCellValue = (elevationLine.charAt(col) - '0');
+                // int elevationCellValue = (elevationLine.charAt(col) - '0');
 
-                elevation[row][col] = elevationCellValue;
+                // elevation[row][col] = elevationCellValue;
+
+                // all elevation are ignored and set to 1
+                elevation[row][col] = 1;
 
                 if (mapCellValue == 'F' || mapCellValue == 'M') {
                     initHero(mapCellValue, row, col);
@@ -193,7 +196,7 @@ public class GameRunner {
         }
 
         mapScan.close();
-        elevationScan.close();
+        // elevationScan.close();
     }
 
     private static void initHero(char type, int row, int col) {
